@@ -23,12 +23,21 @@
             }
         }
 
-        final class Coordinator: NSObject, UITextViewDelegate {
+        final class Coordinator: NSObject, UITextViewDelegate, UIGestureRecognizerDelegate {
             var openURL: OpenURLAction?
 
             func textView(_: UITextView, shouldInteractWith URL: URL, in _: NSRange, interaction _: UITextItemInteraction) -> Bool {
                 openURL?(URL)
                 return false
+            }
+
+            @objc func didTapView(_ sender: UITapGestureRecognizer) {
+              guard let tv = sender.view as? UITextView else {
+                return
+              }
+
+              let char = tv.layoutManager.characterIndex(for: sender.location(in: sender.view), in: tv.textContainer, fractionOfDistanceBetweenInsertionPoints: nil)
+              openURL?(URL.init(fileURLWithPath: String(char), isDirectory: false))
             }
         }
 
@@ -47,6 +56,8 @@
             uiView.isScrollEnabled = false
             uiView.textContainer.lineFragmentPadding = 0
             uiView.delegate = context.coordinator
+            let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.didTapView(_:)))
+            uiView.addGestureRecognizer(tap)
 
             return uiView
         }

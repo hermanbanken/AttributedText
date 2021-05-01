@@ -38,6 +38,15 @@
                 openURL?(url)
                 return false
             }
+
+            @objc func didClickView(_ sender: NSGestureRecognizer) {
+              guard let tv = sender.view as? NSTextView else { return }
+              guard let lm = tv.layoutManager else { return }
+              guard let tc = tv.textContainer else { return }
+
+              let char = lm.characterIndex(for: sender.location(in: sender.view), in: tc, fractionOfDistanceBetweenInsertionPoints: nil)
+              openURL?(URL.init(fileURLWithPath: String(char), isDirectory: false))
+            }
         }
 
         let attributedText: NSAttributedString
@@ -55,6 +64,8 @@
             // we are setting the container's width manually
             nsView.textContainer?.widthTracksTextView = false
             nsView.delegate = context.coordinator
+            let click = NSClickGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.didClickView))
+            nsView.addGestureRecognizer(click)
 
             return nsView
         }
